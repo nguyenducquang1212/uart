@@ -1,11 +1,12 @@
 # uart
 
-uart                                           Project root directory
-|__ hdl                                           Uart HDL source code
-|__ inc                                           Uart predefined macro
-|__ sim                                           Testbench folder
-    |__ inc                                       Testbench predefine macro
-    |__ src                                       Testbench folder
-    |__ work                                      Work folder
-        |__ log                                   Log folder
-        |__ log_reg                               Log Regression folder
+This is the root directory of the UART project. The directory structure is as follows:
+
+- `hdl`: Uart HDL source code
+- `inc`: Uart predefined macro
+- `sim`: Testbench folder
+  - `inc`: Testbench predefined macro
+  - `src`: Testbench source code folder
+  - `work`: Work folder
+    - `log`: Log folder
+    - `log_reg`: Log Regression folder
