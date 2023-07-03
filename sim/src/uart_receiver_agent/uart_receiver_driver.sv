@@ -84,10 +84,7 @@ endclass:uart_receiver_driver
     super.run_phase(phase);
     @(negedge vif.clk) begin
     // Driving the reset values
-      vif.reset_n   <= 1'b0;
-      vif.en_sample <= 1'b0;
-      vif.dout      <= 8'b0;
-      vif.recv_req  <= 1'b0;
+      vif.reset_n   <= 1'b1;
       vif.rx        <= 1'b1;
       vif.recv_ack  <= 1'b0; 
     end
@@ -96,7 +93,7 @@ endclass:uart_receiver_driver
       uart_receiver_sequence_item req;
       seq_item_port.get_next_item(req);
       drive_data(req);
-      req.print();
+      // req.print();
       seq_item_port.item_done();
     end 
   endtask:run_phase
@@ -106,19 +103,21 @@ endclass:uart_receiver_driver
 //-----------------------------------------------------------------------------
   task uart_receiver_driver::drive_data(uart_receiver_sequence_item req);
     @(negedge vif.clk)
-    vif.reset_n     = req.reset_n                ;
-    @(negedge vif.clk)
-    vif.recv_ack    = req.recv_ack               ;
-    @(negedge vif.clk)
-    vif.recv_ack    = 1'b0;
-    if(req.recv_ack) begin
-      req.frame_rx    <= {1'b1, req.rx_sample, 1'b0};
+    vif.reset_n     = req.reset_n  ;
+    if (req.reset_n) begin
+      req.frame_rx     <= {1'b1, req.rx_sample, 1'b0};
       vif.rx_sample    <= req.rx_sample;
-    for(int i = 0; i < 10; i++) begin
-      req.rx        <= req.frame_rx[i];
-      repeat(vif.bit_time)@(negedge vif.clk);
-      vif.rx        <= req.rx;
+      `uvm_info("RECEIVER_DRIVER", "RX START", UVM_LOW);
+      for(int i = 0; i < 10; i++) begin
+        req.rx        <= req.frame_rx[i];
+        vif.rx        <= req.frame_rx[i];
+        repeat(vif.bit_time*2)@(negedge vif.clk);
+      end
+      wait (vif.recv_req);
+      repeat($urandom_range(0,5)) @(posedge vif.clk);
+      vif.recv_ack <= 1'b1;
+      @(posedge vif.clk);
+      vif.recv_ack <= 1'b0;
     end
-  end
-    repeat(vif.bit_time)@(posedge vif.clk);
+    #53; // wait 53 time unit for reset_n
   endtask: drive_data

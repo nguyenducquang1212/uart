@@ -22,17 +22,6 @@ module uart
 
 wire en, en_sample;
 
-uart_gen_clk #(
-  .SYS_FREQ  (SYS_FREQ ),
-  .BAUD_RATE (BAUD_RATE),
-  .SAMPLE    (SAMPLE   )
-) uart_gen_clk (
-  .clk      (clk      ),
-  .reset_n  (reset_n  ),
-  // .en       (en       ),
-  .en_sample(en_sample)
-);
-
 
 uart_transmitter #(
   .SYS_FREQ       (SYS_FREQ      ),
@@ -52,13 +41,16 @@ uart_transmitter #(
 );
 
 uart_receiver #(
-  .DATA_SIZE      (DATA_SIZE     ),
+  .SYS_FREQ       (SYS_FREQ      ),
+  .BAUD_RATE      (BAUD_RATE     ),
   .SAMPLE         (SAMPLE        ),
+  .CLOCK          (CLOCK         ),
+  .BAUD_DV        (BAUD_DV       ),
+  .DATA_SIZE      (DATA_SIZE     ),
   .BIT_COUNT_SIZE (BIT_COUNT_SIZE)
 ) uart_receiver (
   .clk      (clk      ),
   .reset_n  (reset_n  ),
-  .en_sample(en_sample),
   .rx       (rx       ),
   .dout     (dout     ),
   .recv_req (recv_req ),

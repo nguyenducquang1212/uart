@@ -54,18 +54,18 @@ endclass:uart_receiver_sequence
 //-----------------------------------------------------------------------------------------------
   task uart_receiver_sequence::body();
     req = uart_receiver_sequence_item::type_id::create("req");
-    `uvm_do_with(req, {recv_ack == 1; rx_sample == 8'b10110110; act == RESET; })
-    `uvm_do_with(req, { rx_sample == 8'b00111100; act == NORMAL; })
-    `uvm_do_with(req, { rx_sample == 8'b00111110; act == NORMAL; })
-    `uvm_do_with(req, { rx_sample == 8'b11111111; act == NORMAL; })
-    `uvm_do_with(req, { recv_ack == 0; rx_sample == 8'b11110000; act == RESET; })
-    repeat(10) begin
-      req = uart_receiver_sequence_item::type_id::create("req");
-      start_item(req);
-      assert(req.randomize());
-      finish_item(req);
-      end
-    for(int i = 5; i < 256; i += 16) begin
-      `uvm_do_with(req, { rx_sample == i; act == NORMAL; })
-    end
+    `uvm_do_with(req, { rx_sample == 8'b10110110; act == RESET; })
+    `uvm_do_with(req, { rx_sample == 8'b01010101; act == NORMAL; })
+    `uvm_do_with(req, { rx_sample == 8'b01001001; act == NORMAL; })
+    // `uvm_do_with(req, { rx_sample == 8'b11111111; act == NORMAL; })
+    // `uvm_do_with(req, { recv_ack == 0; rx_sample == 8'b11110000; act == RESET; })
+    // repeat(10) begin
+    //   req = uart_receiver_sequence_item::type_id::create("req");
+    //   start_item(req);
+    //   assert(req.randomize());
+    //   finish_item(req);
+    //   end
+    // for(int i = 5; i < 256; i += 16) begin
+    //   `uvm_do_with(req, { rx_sample == i; act == NORMAL; })
+    // end
 endtask

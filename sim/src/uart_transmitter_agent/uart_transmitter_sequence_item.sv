@@ -53,9 +53,10 @@ class uart_transmitter_sequence_item extends uvm_sequence_item;
   // ---------------------------------------
   // Constraints of signals
   // ---------------------------------------
-  constraint reset_n_c      {(act == RESET)   -> (reset_n == 0);                          }
-  constraint normal_c       {(act == NORMAL)  -> (reset_n == 1 && send_req == 1);         }
-  constraint ratio          {act dist {RESET := 2,NORMAL := 10};            }
+  constraint reset_n_c      {(act == RESET)   -> (reset_n == 0); }
+  constraint normal_c       {(act == NORMAL)  -> (reset_n == 1); }
+  constraint act_c          { soft act == NORMAL; }
+  // constraint ratio          {act dist {RESET := 2,NORMAL := 10}; }
 
 //---------------------------------------------------------------------------------------------
 //  Defining external tasks and functions

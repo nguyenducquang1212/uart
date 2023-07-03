@@ -23,9 +23,15 @@
   property send_ack_p;
     @(posedge intf.clk) (intf.send_ack) |-> ( intf.din == intf.frame_tx);
   endproperty
-  AP_SEND_ACK: assert property (send_ack_p);
+  AP_SEND_ACK: assert property (send_ack_p)
+    begin
+      $display("SVA_PASS: @%15t intf.din = %8b   intf.frame_tx = %8b", $time(), intf.din, intf.frame_tx);
+    end
+    else begin
+      $display("SVA_ERROR: @%15t intf.din = %8b   intf.frame_tx = %8b", $time(), intf.din, intf.frame_tx);
+    end
 
-//  Check uart_receiver
+ // Check uart_receiver
   property recv_req_p;
     @(posedge intf.clk) (intf.recv_req) |-> ( intf.dout == intf.rx_sample);
   endproperty

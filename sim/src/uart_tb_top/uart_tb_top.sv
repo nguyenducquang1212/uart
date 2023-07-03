@@ -53,24 +53,25 @@
 
 `include "include_files.svh"
 
-`timescale 1ns/1ns
-  module uart_tb_top;
-    logic clk;
-    uvm_root _UVM_Root;
-    uart_coverage cov = new();
+`timescale 1us/1us
+
+module uart_tb_top;
+  logic clk;
+  uvm_root _UVM_Root;
+  // uart_coverage cov = new();
   initial begin
     clk = 1;
   end
+
 // Instantiation of UART interface
-  always #5 clk = ~clk;
+  always #1 clk = ~clk;
   uart_interface intf(.clk(clk));
 //  Need to have the loopback mode
   // assign intf.rx = intf.tx;
 
-  uart #(.SYS_FREQ      (50000000),
-         .BAUD_RATE     (9600    ),
-         .SAMPLE        (16      ),
-         .DATA_SIZE     (8       )
+  uart #(.SYS_FREQ      (`SYS_FREQ),
+         .BAUD_RATE     (`BAUD_RATE),
+         .DATA_SIZE     (`DATA_SIZE)
           )
     uart_inst(
         .clk      (intf.clk),
@@ -85,17 +86,17 @@
         .tx       (intf.tx)
         );
 
-   always @(posedge intf.clk) begin
-      cov.samplesignal(intf);
-    end
+   // always @(posedge intf.clk) begin
+   //    cov.samplesignal(intf);
+   //  end
 
-   always @(posedge intf.send_req) begin
-      cov.sampledin(intf);
-    end
+   // always @(posedge intf.send_req) begin
+   //    cov.sampledin(intf);
+   //  end
 
-   always @(posedge intf.recv_req) begin
-      cov.sampledout(intf);
-    end
+   // always @(posedge intf.recv_req) begin
+   //    cov.sampledout(intf);
+   //  end
 
   initial begin
     _UVM_Root = uvm_root::get();

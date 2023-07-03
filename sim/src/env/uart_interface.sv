@@ -1,46 +1,33 @@
-//  2) Use of Include Guards
-//`ifndef _uart_if_INCLUDED_
-//`define _uart_if_INCLUDED_
-
-// interface uart_interface
-// #(
-//   parameter SYS_FREQ        = 50000000           ,
-//   parameter BAUD_RATE       = 9600               ,
-//   parameter SAMPLE          = 16                 ,
-//   parameter DATA_SIZE       = 8                  ,
-//   parameter BIT_COUNT_SIZE  = $clog2(DATA_SIZE+1)
-// )
-//     (input reset_n);
-//   logic clk;
-//   logic tx;
-//   logic rx;
-//   logic en;
-//   logic en_sample;
-//   logic [DATA_SIZE-1:0] din;
-//   logic [DATA_SIZE-1:0] dout;
-//   logic [DATA_SIZE-1:0] frame_rx;
-//   logic [DATA_SIZE-1:0] frame_tx;
-//   logic send_req;
-//   logic send_ack;
-//   logic recv_req;
-//   logic recv_ack;
-//   real bit_time = (SYS_FREQ/BAUD_RATE);
-// endinterface
-
+/*
+ *-----------------------------------------------------------------------------
+ *     Copyright (C) 2022 by Dolphin Technology
+ *     All right reserved.
+ *
+ *     Copyright Notification
+ *     No part may be reproduced except as authorized by written permission.
+ *
+ *     Module/Class: uart_interface
+ *     Project     : Verification Traning
+ *     Author      : haint1
+ *     Created     : 2022-10-01 11:04:18
+ *     Description :
+ *
+ *     @Last Modified by:   
+ *     @Last Modified time:
+ *-----------------------------------------------------------------------------
+ */
 interface uart_interface
 #(
-  parameter SYS_FREQ        = 50000000           ,
-  parameter BAUD_RATE       = 9600               ,
-  parameter SAMPLE          = 16                 ,
-  parameter DATA_SIZE       = 8                  ,
-  parameter BIT_COUNT_SIZE  = $clog2(DATA_SIZE+1)
+  parameter SYS_FREQ        = `SYS_FREQ  ,
+  parameter BAUD_RATE       = `BAUD_RATE ,
+  parameter DATA_SIZE       = `DATA_SIZE 
 )
-    (input clk);
+  (input clk);
   logic reset_n;
   logic tx;
   logic rx;
-  logic en;
-  logic en_sample;
+  // logic en;
+  // logic en_sample;
   logic [DATA_SIZE-1:0] din;
   logic [DATA_SIZE-1:0] dout;
   logic [DATA_SIZE-1:0] rx_sample;
@@ -49,7 +36,7 @@ interface uart_interface
   logic send_ack;
   logic recv_req;
   logic recv_ack;
-  real bit_time = (SYS_FREQ/BAUD_RATE);
+  int bit_time = ((SYS_FREQ/BAUD_RATE)/2);
 endinterface
 
 

@@ -32,6 +32,8 @@ class uart_transmitter_driver extends uvm_driver #(uart_transmitter_sequence_ite
 //  Virtual interface holds the pointer to the Interface.
   virtual uart_interface vif;
   uart_transmitter_config w_cfg;
+  bit timeout_ack;
+
  
 //  The extern qualifier indicates that the body of the method (its implementation) is to be found 
 //  outside the declaration
@@ -84,17 +86,15 @@ endfunction:new
     super.run_phase(phase);
     @(negedge vif.clk) begin
       vif.reset_n   <= 1'b1;
-      vif.en        <= 1'b0;
       vif.din       <= 8'b0;
       vif.send_req  <= 1'b0;
-      vif.tx        <= 1'b1;
-      vif.send_ack  <= 1'b0;
+      timeout_ack   <= 1'b1;
     end
- //for transmission
+  //for transmission
     forever begin
       uart_transmitter_sequence_item req;
       seq_item_port.get_next_item(req);
-      req.print();
+      // req.print();
       drive_data(req);
       seq_item_port.item_done();
     end 
@@ -105,12 +105,36 @@ endfunction:new
 //-----------------------------------------------------------------------------
 task uart_transmitter_driver::drive_data(uart_transmitter_sequence_item req);
   @(negedge vif.clk)
-  vif.reset_n   <= req.reset_n;
-  repeat(vif.bit_time)@(negedge vif.clk);
-  vif.din       <= req.din;
-  @(negedge vif.clk) 
-  vif.send_req  <= req.send_req;
-  @(negedge vif.clk)
-  vif.send_req  <= 1'b0;
-  repeat((vif.bit_time)*10)@(negedge vif.clk);
+  if (~req.reset_n) begin
+    vif.reset_n   <= req.reset_n;
+    vif.send_req  <= req.send_req;
+    vif.din       <= req.din;
+    #53; // wait 53 time unit for reset_n
+    vif.reset_n   <= 1'b1;
+  end
+  else begin
+    fork
+      begin
+        vif.send_req  <= req.send_req;
+        @(negedge vif.clk)
+        vif.send_req  <= 1'b0;
+      end
+    join_none
+    vif.reset_n   <= req.reset_n;
+    vif.din       <= req.din;
+    fork
+      begin
+        repeat((vif.bit_time)*2*11+2) @(posedge vif.clk);
+        if (timeout_ack) begin
+          `uvm_error("TRANSMITTER_DRIVER", "SEND_ACK TIMEOUT");
+          #100;
+        end
+      end
+      begin
+        @(posedge vif.send_ack);
+        timeout_ack <= 1'b0;
+        `uvm_info("TRANSMITTER_DRIVER", "SEND_ACK ACTIVE", UVM_LOW);
+      end
+    join
+  end
 endtask: drive_data

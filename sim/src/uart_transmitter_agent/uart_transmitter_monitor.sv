@@ -88,9 +88,7 @@ endclass:uart_transmitter_monitor
 //  The run phase is implemented as a task, and all uvm_component run tasks are executed in parallel.
 //------------------------------------------------------------------------------------------------//
   task uart_transmitter_monitor::run_phase(uvm_phase phase);
-    forever begin
-      collect_data();
-    end 
+    collect_data();
   endtask:run_phase
 
 //-------------------------------------------------------------------------------------------------------------------//
@@ -99,21 +97,27 @@ endclass:uart_transmitter_monitor
 //  which will be used by the sva and coverage
 //-------------------------------------------------------------------------------------------------------------------//
   task uart_transmitter_monitor::collect_data();
+    data_sent = uart_transmitter_sequence_item::type_id::create("data_sent");
     forever begin
-      data_sent = uart_transmitter_sequence_item::type_id::create("data_sent");
-      @(negedge vif.clk);
-      data_sent.reset_n   = vif.reset_n          ;
-      data_sent.din       = vif.din              ;
-      data_sent.send_req  = vif.send_req         ;
-      data_sent.send_ack  = vif.send_ack         ;
-      data_sent.tx        = vif.tx               ;
-      repeat((vif.bit_time)*3)@(posedge vif.clk) ;
+      wait (vif.reset_n === 1'b1 && vif.send_req === 1'b1)
+      @(posedge vif.clk);
+      `uvm_info("TRANSMITTER_MONITOR", "COLLECT DATA", UVM_LOW);
+      data_sent.reset_n   = vif.reset_n           ;
+      data_sent.din       = vif.din               ;
+      data_sent.send_req  = vif.send_req          ;
+      data_sent.send_ack  = vif.send_ack          ;
+      repeat(vif.bit_time*3) @(posedge vif.clk)  ;
+      // `uvm_info("TRANSMITTER_MONITOR", "CAPTURE BIT 0", UVM_LOW);
       for(int i = 0; i < 8; i++) begin
-        data_sent.tx       = vif.din[i]         ;
-        data_sent.frame_tx[i] = vif.tx;
-        repeat(vif.bit_time)@(posedge vif.clk)  ;
+        data_sent.tx          = vif.tx            ; // compare 1 bit
+        data_sent.frame_tx[i] = vif.tx            ; // compare pattern
+      // `uvm_info("TRANSMITTER_MONITOR", $sformatf("vif.tx = %0b", vif.tx), UVM_LOW);
+      // `uvm_info("TRANSMITTER_MONITOR", $sformatf("frame_tx[%0d] = %0b", i, data_sent.frame_tx[i]), UVM_LOW);
+        repeat(vif.bit_time*2)@(posedge vif.clk);
       end
+      `uvm_info("TRANSMITTER_MONITOR", "SEND DATA TO SVA", UVM_LOW);
+      `uvm_info("TRANSMITTER_MONITOR", $sformatf("frame_tx = %8b", data_sent.frame_tx), UVM_LOW);
         vif.frame_tx = data_sent.frame_tx;
-      monitor_port.write(data_sent)             ;
+      monitor_port.write(data_sent)               ;
     end
   endtask:collect_data
